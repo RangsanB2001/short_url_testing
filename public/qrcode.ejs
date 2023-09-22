@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="home.css">
+</head>
+
+<body>
+    <nav>
+        <div>Generate QR Code</div>
+        <a href="/">ShortUrl</a>
+        <a href="/loginpage">Login</a>
+        <div>Welcome, <%= typeof email !=='undefined' ? `${session.email}, ${session.userID}` : "" %>
+        </div>
+    </nav>
+    <div class="container-lg mt-5">
+        <section class="second">
+            <div class="outer">
+                <div class="inner">
+                    <div class="bg">
+                        <h2 class="section-heading">Make your URL easy to share</h2>
+                        <p>Shortening your URL makes it easier to share on social media, email, text messages, and more.
+                            Try it out below and see for yourself.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <div class="row row-cols-1 row-cols-md-12 mb-3">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="p-3">
+                        <form action="/genQrcode" method="post" class="row">
+                            <div class="col-lg-10">
+                                <input type="url" id="inputText" class="form-control w-100"
+                                    placeholder="Enter a URL here ..." name="inputText" required />
+                            </div>
+                            <div class="col-lg-2">
+                                <input type="submit" class="btn btn-primary" value="Generate"
+                                    onclick="generateAndDisplayQRCode()" />
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container mt-5">
+            <div class="position-absolute top-75 start-50 end-75">
+                <div id="qrcodeContainer" class="row justify-content-center align-items-center">
+                    <div class="col-sm-6">
+                        <div class="card">
+                            <img src="<%= typeof qrCodeDataUrl !== 'undefined' ? qrCodeDataUrl : '' %>" alt="QR Code">
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <button class="btn btn-success w-100" onclick="downloadQRCode()">Download QR Code</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let qrcodeInstance;
+
+        function generateQRCode(inputText) {
+            // Create a QRCode instance
+            const qrcode = new QRCode({
+                text: inputText,
+                width: 256,
+                height: 256,
+            });
+
+            // Generate the QR Code
+            return qrcode.toDataURL();
+        }
+
+        function generateAndDisplayQRCode() {
+            const inputText = document.getElementById("inputText").value;
+            if (!inputText) {
+                alert("Please enter a text to convert to QR Code!");
+                return;
+            }
+            const qrcodeContainer = document.getElementById("qrcodeContainer");
+
+            // Generate the QR Code and display it
+            generateQRCode(inputText)
+                .then((qrCodeDataUrl) => {
+                    qrcodeContainer.innerHTML = ""; // Clear any previous content in qrcodeContainer
+
+                    // Create an img element for the QR Code
+                    const qrCodeImg = document.createElement("img");
+                    qrCodeImg.src = qrCodeDataUrl;
+                    qrCodeImg.alt = "QR Code";
+
+                    // Append the QR Code img to qrcodeContainer
+                    qrcodeContainer.appendChild(qrCodeImg);
+                })
+                .catch((error) => {
+                    console.error("QR Code generation error:", error);
+                    alert("QR Code generation error. Please try again.");
+                });
+        }
+        function downloadQRCode() {
+            // รับ URL ของ QR Code จากรูปภาพ QR Code
+            const qrCodeImg = document.querySelector("#qrcodeContainer img");
+
+            // สร้างลิงก์ (URL) สำหรับดาวน์โหลดรูปภาพ QR Code
+            const downloadLink = document.createElement("a");
+            downloadLink.href = qrCodeImg.src;
+            downloadLink.download = "qr_code.png"; // ชื่อไฟล์ที่จะดาวน์โหลด
+
+            // คลิกลิงก์ (URL) เพื่อดาวน์โหลด QR Code
+            downloadLink.click();
+        }
+
+    </script>
+
+</body>
+
+</html>
